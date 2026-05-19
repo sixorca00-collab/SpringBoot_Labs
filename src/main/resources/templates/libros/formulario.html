@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${tituloPantalla}">Formulario</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9; }
+        .form-container { max-width: 400px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
+        input { padding: 8px; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; }
+        button:hover { background-color: #45a049; }
+        .btn-cancel { background-color: #f44336; text-decoration: none; display: inline-block; padding: 10px 15px; color: white; border-radius: 4px; text-align: center; margin-top: 10px; width: 100%; box-sizing: border-box; }
+        .btn-cancel:hover { background-color: #da190b; }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h1 th:text="${tituloPantalla}">Nuevo Libro</h1>
+
+    <form th:action="@{/ui/libros/guardar}" th:object="${libro}" method="post">
+
+        <div class="form-group">
+            <label for="titulo">Título del Libro:</label>
+            <input type="text" th:field="*{titulo}" required />
+        </div>
+
+        <div class="form-group">
+            <label for="autor">Autor:</label>
+            <input type="text" th:field="*{autor}" required />
+        </div>
+
+        <div class="form-group">
+            <label for="isbn">ISBN:</label>
+            <input type="text" th:field="*{isbn}" required />
+        </div>
+
+        <div class="form-group">
+            <label for="anioPublicacion">Año de Publicación:</label>
+            <input type="number" th:field="*{anioPublicacion}" required />
+        </div>
+
+        <button type="submit">Guardar Libro</button>
+        <a th:href="@{/ui/libros}" class="btn-cancel">Cancelar</a>
+
+    </form>
+</div>
+
+</body>
+</html>

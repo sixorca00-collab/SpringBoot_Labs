@@ -16,6 +16,11 @@
 
 <!-- El texto de aquí adentro cambiará por lo que enviamos en "tituloPantalla" -->
 <h1 th:text="${tituloPantalla}">Lista de Libros</h1>
+<div style="margin-bottom: 20px;">
+    <a th:href="@{/ui/libros/nuevo}" style="padding: 10px 15px; background-color: #008CBA; color: white; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">
+        + Agregar Nuevo Libro
+    </a>
+</div>
 
 <!-- Si la lista está vacía, se muestra este mensaje -->
 <div th:if="${#lists.isEmpty(libros)}" class="empty-state">
