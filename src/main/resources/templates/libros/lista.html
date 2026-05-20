@@ -15,13 +15,13 @@
 <body>
 
 <!-- th:replace="ruta/archivo :: nombreFragmento" -->
-<div th:replace="~{layout/componentes :: navbar}"></div>
+<div th:replace="~{libros/layout/componentes :: navbar}"></div>
 
 <div style="margin: 20px;">
-    <!-- ... AQUÍ VA EL CONTENIDO PRINCIPAL (El <h1>, la tabla, el formulario, etc.) ... -->
+
 </div>
 
-<div th:replace="~{layout/componentes :: footer}"></div>
+
 
 <!-- El texto de aquí adentro cambiará por lo que enviamos en "tituloPantalla" -->
 <h1 th:text="${tituloPantalla}">Lista de Libros</h1>
@@ -58,6 +58,7 @@
     </tr>
     </tbody>
 </table>
+<div th:replace="~{libros/layout/componentes :: footer}"></div>
 
 </body>
 </html>
