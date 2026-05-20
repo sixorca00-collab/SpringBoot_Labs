@@ -29,6 +29,11 @@
 <div class="form-container">
     <h1 th:text="${tituloPantalla}">Nuevo Libro</h1>
 
+    <!-- Bloque de error visual -->
+    <div th:if="${errorAnio}" style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+        <strong th:text="${errorAnio}">Mensaje de error genérico</strong>
+    </div>
+
     <form th:action="@{/ui/libros/guardar}" th:object="${libro}" method="post">
 
         <div class="form-group">
