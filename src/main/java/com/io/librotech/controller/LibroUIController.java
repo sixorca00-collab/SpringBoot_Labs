@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.time.LocalDate;
 import java.util.List;
 
 @Controller // Ojo: Aquí NO usamos @RestController, solo @Controller
@@ -41,11 +43,27 @@ public class LibroUIController {
     }
 
     @PostMapping("/guardar")
-    public String guardarLibro(@ModelAttribute("libro") Libro libro) {
-        // 1. Guardamos el libro usando el método real de tu servicio
+    public String guardarLibro(@ModelAttribute("libro") Libro libro, Model model) {
+    //Guardamos el año actual como variable para poder hacerle una validación
+
+        int anioActual = LocalDate.now().getYear();
+
+        if (libro.getAnioPublicacion() > anioActual){
+            //Inyectamos el mensaje de error
+
+            model.addAttribute("ErrorAnio", "El anio de publicacion no puede ser mayor al año presente" + anioActual +
+                    model.addAttribute("tituloPantalla", "Registrar nuevo libro(Corrección)"));
+            //Lo redireccionamos a que lo cree de nuevo
+            return "libros/formulario";
+
+        }
+        //Si esta bien seguimos el flujo con normalidada
+
+        //Guardamos el libro usando el méthodo real de tu servicio
+
         libroService.saveBook(libro);
 
-        // 2. Patrón PRG: Redirigimos a la lista de libros mediante un GET
+        // 2. Patrón PRG: Post, Reset, Get.
         // La palabra "redirect:" le dice al navegador que haga una nueva petición limpia
         return "redirect:/ui/libros";
     }
