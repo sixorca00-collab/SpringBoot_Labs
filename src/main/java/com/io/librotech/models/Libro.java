@@ -1,53 +1,52 @@
 package com.io.librotech.models;
 
-
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "libros")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Libro {
 
-    @Id// lo mapeamos y definimos que e un id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 150)
+    @Column(nullable = false)
     private String titulo;
 
-    @Column(nullable = false, length = 120)
+    @Column(nullable = false, length = 200)
     private String autor;
 
-    @Column(nullable = false,unique = true, length = 25)
+    @Column(unique = true, length = 20)
     private String isbn;
 
-    @Column(nullable = false, length = 6)
-    private int anioPublicacion;
+    @Column(name = "fecha_publicacion", nullable = false)
+    private LocalDate fechaPublicacion; // Mapeado con DATE del V1
 
-    // Constructor vacío
-    public Libro() {}
+    private Double precio;
 
-    // Constructor con parámetros
-    public Libro(Long id, String titulo, String autor, String isbn, int anioPublicacion) {
-        this.id = id;
-        this.titulo = titulo;
-        this.autor = autor;
-        this.isbn = isbn;
-        this.anioPublicacion = anioPublicacion;
-    }
+    @Column(nullable = false)
+    private Boolean disponible = true; // Valor por defecto mapeado con el V1
 
-    // Getters y Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    // Relación Muchos a Uno con Editorial
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "editorial_id", nullable = false) // Llave foránea en la BD
+    private Editorial editorial;
 
-    public String getTitulo() { return titulo; }
-    public void setTitulo(String titulo) { this.titulo = titulo; }
-
-    public String getAutor() { return autor; }
-    public void setAutor(String autor) { this.autor = autor; }
-
-    public String getIsbn() { return isbn; }
-    public void setIsbn(String isbn) { this.isbn = isbn; }
-
-    public int getAnioPublicacion() { return anioPublicacion; }
-    public void setAnioPublicacion(int anioPublicacion) { this.anioPublicacion = anioPublicacion; }
+    // Relación Muchos a Muchos con Genero (Dueño de la relación)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "libros_generos", // Nombre de la tabla intermedia (V2)
+            joinColumns = @JoinColumn(name = "libro_id"), // Llave que apunta a esta tabla (Libro)
+            inverseJoinColumns = @JoinColumn(name = "genero_id") // Llave que apunta a la otra tabla (Genero)
+    )
+    private List<Genero> generos;
 }
