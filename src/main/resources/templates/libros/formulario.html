@@ -1,37 +1,8 @@
-<!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title th:text="${tituloPantalla}">Formulario</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9; }
-        .form-container { max-width: 400px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
-        input { padding: 8px; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; }
-        button:hover { background-color: #45a049; }
-        .btn-cancel { background-color: #f44336; text-decoration: none; display: inline-block; padding: 10px 15px; color: white; border-radius: 4px; text-align: center; margin-top: 10px; width: 100%; box-sizing: border-box; }
-        .btn-cancel:hover { background-color: #da190b; }
-    </style>
-</head>
-<body>
-
-<!-- th:replace="ruta/archivo :: nombreFragmento" -->
-<div th:replace="~{libros/layout/componentes :: navbar}"></div>
-
-<div style="margin: 20px;">
-    <!-- ... AQUÍ VA EL CONTENIDO PRINCIPAL (El <h1>, la tabla, el formulario, etc.) ... -->
-</div>
-
-
-
 <div class="form-container">
     <h1 th:text="${tituloPantalla}">Nuevo Libro</h1>
 
-    <!-- Bloque de error visual -->
-    <div th:if="${errorAnio}" style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
-        <strong th:text="${errorAnio}">Mensaje de error genérico</strong>
+    <div th:if="${ErrorAnio}" style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+        <strong th:text="${ErrorAnio}">Mensaje de error genérico</strong>
     </div>
 
     <form th:action="@{/ui/libros/guardar}" th:object="${libro}" method="post">
@@ -52,8 +23,18 @@
         </div>
 
         <div class="form-group">
-            <label for="anioPublicacion">Año de Publicación:</label>
-            <input type="number" th:field="*{anioPublicacion}" required />
+            <label for="fechaPublicacion">Fecha de Publicación:</label>
+            <input type="date" th:field="*{fechaPublicacion}" required />
+        </div>
+
+        <div class="form-group">
+            <label for="precio">Precio:</label>
+            <input type="number" step="0.01" th:field="*{precio}" required />
+        </div>
+
+        <div class="form-group">
+            <label for="editorial">ID de la Editorial (Prueba del 1 al 10):</label>
+            <input type="number" th:field="*{editorial.id}" min="1" max="10" required />
         </div>
 
         <button type="submit">Guardar Libro</button>
@@ -61,8 +42,3 @@
 
     </form>
 </div>
-
-<div th:replace="~{libros/layout/componentes :: footer}"></div>
-
-</body>
-</html>
