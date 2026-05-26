@@ -68,5 +68,9 @@ public class BookService {
         return bookRepository.findById(id).orElseThrow(()-> new RuntimeException("libro no encontrado"));
     }
 
+    public void descatalogarLibro(Long id){
+        Libro libro = bookRepository.findById(id).orElseThrow(()-> new RuntimeException("Libro no encontrado con el Id"));
+        libro.softDelete();
+    }
 
 }
