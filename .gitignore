@@ -31,5 +31,17 @@ build/
 
 ### VS Code ###
 .vscode/
+# Databases
+*.db
+*.mv.db
+*.trace.db
+
 # App properties
-application.properties
+src/main/resources/application.properties
+
+# Maven
+target/
+
+# IntelliJ
+.idea/
+*.iml
