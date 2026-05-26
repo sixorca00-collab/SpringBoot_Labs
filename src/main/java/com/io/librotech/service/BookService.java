@@ -1,8 +1,11 @@
 package com.io.librotech.service;
 
+import com.io.librotech.dto.LibroResumeDTO;
 import com.io.librotech.models.Libro;
 import com.io.librotech.repository.BookRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -54,4 +57,16 @@ public class BookService {
         }
         return false;
     }
+
+    public Slice<LibroResumeDTO> getCatalog(int page, int size){
+        //max 50 registros
+        int validateSize = Math.min(size, 50);
+        return bookRepository.findAllLibroResumenes(PageRequest.of(page, validateSize));
+    }
+
+    public Libro getLibroConRelaciones(Long id){
+        return bookRepository.findById(id).orElseThrow(()-> new RuntimeException("libro no encontrado"));
+    }
+
+
 }
