@@ -18,7 +18,7 @@ public interface BookRepository extends JpaRepository<Libro, Long> {
     // OPTIMIZACIÓN 1: Slice + JPQL Constructor
     // No hace SELECT COUNT, solo trae los datos necesarios.
     @Query("""
-        SELECT new com.io.librotech.dto.LibroResumenDTO(
+        SELECT new com.io.librotech.dto.LibroResumeDTO(
             l.id,
             l.titulo,
             l.fechaPublicacion,
