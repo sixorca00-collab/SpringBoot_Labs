@@ -4,12 +4,11 @@ import com.io.librotech.models.Editorial;
 import com.io.librotech.models.Libro;
 import com.io.librotech.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import com.io.librotech.dto.LibroResumeDTO;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,10 +21,20 @@ public class LibroUIController {
     private BookService libroService;
 
     @GetMapping
-    public String listarLibrosUI(Model model) {
-        List<Libro> libros = libroService.getAll();
-        model.addAttribute("libros", libros);
+    public String listarLibrosUI(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Model model) {
+
+        Slice<LibroResumeDTO> slice = libroService.getCatalog(page, size);
+
+        model.addAttribute("libros", slice.getContent());
+        model.addAttribute("currentPage", slice.getNumber());
+        model.addAttribute("hasNext", slice.hasNext());
+        model.addAttribute("hasPrevious", slice.hasPrevious());
+
         model.addAttribute("tituloPantalla", "Catálogo de Libros - Dashboard");
+
         return "libros/lista";
     }
 
