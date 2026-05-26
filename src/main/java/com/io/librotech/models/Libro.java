@@ -52,4 +52,8 @@ public class Libro {
             inverseJoinColumns = @JoinColumn(name = "genero_id") // Llave que apunta a la otra tabla (Genero)
     )
     private List<Genero> generos;
+
+    public void softDelete(){
+        this.disponible = false;
+    }
 }
