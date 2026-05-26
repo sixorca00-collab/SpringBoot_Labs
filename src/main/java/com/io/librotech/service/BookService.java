@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -68,6 +69,7 @@ public class BookService {
         return bookRepository.findById(id).orElseThrow(()-> new RuntimeException("libro no encontrado"));
     }
 
+    @Transactional
     public void descatalogarLibro(Long id){
         Libro libro = bookRepository.findById(id).orElseThrow(()-> new RuntimeException("Libro no encontrado con el Id"));
         libro.softDelete();

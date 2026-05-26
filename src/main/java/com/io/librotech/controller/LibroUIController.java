@@ -23,7 +23,7 @@ public class LibroUIController {
     @GetMapping
     public String listarLibrosUI(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "50") int size,
             Model model) {
 
         Slice<LibroResumeDTO> slice = libroService.getCatalog(page, size);
@@ -66,5 +66,13 @@ public class LibroUIController {
 
         libroService.saveBook(libro);
         return "redirect:/ui/libros";
+    }
+
+    @PostMapping("/{id}/descatalogar")
+    public String descatalogarLibro(@PathVariable Long id,
+                                    @RequestParam(defaultValue = "0") int page,
+                                    @RequestParam(defaultValue = "50") int size) {
+        libroService.descatalogarLibro(id);
+        return "redirect:/ui/libros?page=" + page + "&size=" + size;
     }
 }
