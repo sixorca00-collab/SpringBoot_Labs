@@ -54,7 +54,7 @@
         <td th:text="${libro.titulo}">Título de Prueba</td>
         <td th:text="${libro.autor}">Autor de Prueba</td>
         <td th:text="${libro.isbn}">000-000</td>
-        <td th:text="${libro.anioPublicacion}">2026</td>
+        <td th:text="${libro.fechaPublicacion != null ? libro.fechaPublicacion.year : ''}">2026</td>
     </tr>
     </tbody>
 </table>
