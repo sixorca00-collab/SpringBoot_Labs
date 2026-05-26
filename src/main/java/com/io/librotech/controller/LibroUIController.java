@@ -1,5 +1,6 @@
 package com.io.librotech.controller;
 
+import com.io.librotech.models.Editorial;
 import com.io.librotech.models.Libro;
 import com.io.librotech.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,9 @@ public class LibroUIController {
 
     @GetMapping("/nuevo")
     public String mostrarFormularioCreacion(Model model) {
-        model.addAttribute("libro", new Libro());
+        Libro libro = new Libro();
+        libro.setEditorial(new Editorial());
+        model.addAttribute("libro", libro);
         model.addAttribute("tituloPantalla", "Registrar Nuevo Libro");
         return "libros/formulario";
     }
@@ -41,6 +44,9 @@ public class LibroUIController {
 
         // 1. Validamos usando el nuevo campo LocalDate (manejando que no venga null)
         if (libro.getFechaPublicacion() != null && libro.getFechaPublicacion().getYear() > anioActual) {
+            if (libro.getEditorial() == null) {
+                libro.setEditorial(new Editorial());
+            }
 
             // 2. Corregida la concatenación rota del modelo
             model.addAttribute("ErrorAnio", "El año de publicación no puede ser mayor al año presente: " + anioActual);
