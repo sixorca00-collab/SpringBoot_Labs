@@ -3,76 +3,99 @@ package com.io.librotech.service;
 import com.io.librotech.dto.LibroResumeDTO;
 import com.io.librotech.models.Libro;
 import com.io.librotech.repository.BookRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
-@AllArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class BookService {
 
-    private final BookRepository bookRepository; // Es buena práctica marcarlo como final con Lombok
+    private final BookRepository bookRepository;
 
-    public List<Libro> getAll(){
-        return bookRepository.findAll();
+    public List<LibroResumeDTO> getAll() {
+        return bookRepository.findAllLibroResumenes();
     }
 
-    public Libro saveBook(Libro book){
+    public Libro saveBook(Libro book) {
         return bookRepository.save(book);
     }
 
-    public Optional<Libro> obtenerPorId(Long id) {
-        return bookRepository.findById(id);
+    public Libro obtenerPorId(Long id) {
+        return bookRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Libro no encontrado"));
     }
 
-    public Optional<Libro> actualizar(Long id, Libro libroActualizado) {
-        return bookRepository.findById(id).map(libroExistente -> {
-            libroExistente.setTitulo(libroActualizado.getTitulo());
-            libroExistente.setAutor(libroActualizado.getAutor());
-            libroExistente.setIsbn(libroActualizado.getIsbn());
+    public LibroResumeDTO obtenerResumenPorId(Long id) {
+        Libro libro = bookRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Libro no encontrado"));
 
-            // 1. Corregido el 'get' por 'set' para la nueva fecha LocalDate
-            libroExistente.setFechaPublicacion(libroActualizado.getFechaPublicacion());
-
-            // 2. Agregamos el precio (que está en el modelo)
-            libroExistente.setPrecio(libroActualizado.getPrecio());
-            libroExistente.setDisponible(libroActualizado.getDisponible());
-
-            // 3. Sincronizamos las nuevas relaciones para que se puedan editar
-            libroExistente.setEditorial(libroActualizado.getEditorial());
-            libroExistente.setGeneros(libroActualizado.getGeneros());
-
-            return bookRepository.save(libroExistente);
-        });
+        return new LibroResumeDTO(
+                libro.getId(),
+                libro.getTitulo(),
+                libro.getFechaPublicacion(),
+                libro.getPrecio(),
+                libro.getEditorial().getNombre(),
+                libro.getEditorial().getPais()
+        );
     }
 
-    public boolean eliminar(Long id) {
-        if (bookRepository.existsById(id)) {
-            bookRepository.deleteById(id);
-            return true;
+    public Libro actualizar(Long id, Libro libroActualizado) {
+
+        Libro libroExistente = bookRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Libro no encontrado"));
+
+        libroExistente.setTitulo(libroActualizado.getTitulo());
+        libroExistente.setAutor(libroActualizado.getAutor());
+        libroExistente.setIsbn(libroActualizado.getIsbn());
+        libroExistente.setFechaPublicacion(libroActualizado.getFechaPublicacion());
+        libroExistente.setPrecio(libroActualizado.getPrecio());
+        libroExistente.setDisponible(libroActualizado.getDisponible());
+        libroExistente.setEditorial(libroActualizado.getEditorial());
+        libroExistente.setGeneros(libroActualizado.getGeneros());
+
+        return bookRepository.save(libroExistente);
+    }
+
+    public void eliminar(Long id) {
+
+        if (!bookRepository.existsById(id)) {
+            throw new RuntimeException("Libro no encontrado");
         }
-        return false;
+
+        bookRepository.deleteById(id);
     }
 
-    public Slice<LibroResumeDTO> getCatalog(int page, int size){
-        //max 50 registros
+    public Slice<LibroResumeDTO> getCatalog(int page, int size) {
+
         int validateSize = Math.min(size, 50);
-        return bookRepository.findAllLibroResumenes(PageRequest.of(page, validateSize));
+
+        return bookRepository.findAllLibroResumenes(
+                PageRequest.of(page, validateSize)
+        );
     }
 
-    public Libro getLibroConRelaciones(Long id){
-        return bookRepository.findById(id).orElseThrow(()-> new RuntimeException("libro no encontrado"));
+    public Libro getLibroConRelaciones(Long id) {
+
+        return bookRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Libro no encontrado"));
     }
 
     @Transactional
-    public void descatalogarLibro(Long id){
-        Libro libro = bookRepository.findById(id).orElseThrow(()-> new RuntimeException("Libro no encontrado con el Id"));
+    public void descatalogarLibro(Long id) {
+
+        Libro libro = bookRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Libro no encontrado"));
+
         libro.softDelete();
     }
-
 }
