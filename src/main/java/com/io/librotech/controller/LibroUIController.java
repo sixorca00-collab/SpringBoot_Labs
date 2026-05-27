@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import com.io.librotech.dto.LibroResumeDTO;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Controller
 @RequestMapping("/ui/libros")
