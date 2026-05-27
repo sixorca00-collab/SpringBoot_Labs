@@ -1,17 +1,22 @@
 package com.io.librotech.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
 @Entity
 @Table(name = "editoriales")
-@Data
+
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+
+@ToString
+@EqualsAndHashCode
+
 public class Editorial {
 
     @Id
@@ -19,17 +24,27 @@ public class Editorial {
     private Long id;
 
     @Column(nullable = false)
-    private String nombre; // Sincronizado con la columna 'nombre' del V1
+    private String nombre;
 
     @Column(nullable = false, length = 500)
-    private String direccion; // Faltaba en la entidad
+    private String direccion;
 
     @Column(nullable = false, length = 100)
-    private String pais; // Faltaba en la entidad
+    private String pais;
 
-    @Column(name = "fundado_en") // Sincronizado con 'fundado_en' del V1
-    private Integer fundadoEn; // En camelCase estándar de Java
+    @Column(name = "fundado_en")
+    private Integer fundadoEn;
 
-    @OneToMany(mappedBy = "editorial", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(
+            mappedBy = "editorial",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY
+    )
+
+    @JsonIgnore
+
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+
     private List<Libro> libros;
 }
