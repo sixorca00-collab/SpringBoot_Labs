@@ -32,6 +32,21 @@ public interface BookRepository extends JpaRepository<Libro, Long> {
         """)
     Slice<LibroResumeDTO> findAllLibroResumenes(Pageable pageable);
 
+    @Query("""
+        SELECT new com.io.librotech.dto.LibroResumeDTO(
+            l.id,
+            l.titulo,
+            l.fechaPublicacion,
+            l.precio,
+            l.editorial.nombre,
+            l.editorial.pais
+        )
+        FROM Libro l
+        JOIN l.editorial
+        ORDER BY l.fechaPublicacion DESC
+        """)
+    List<LibroResumeDTO> findAllLibroResumenes();
+
     // OPTIMIZACIÓN 2: EntityGraph para evitar N+1 en detalles
     // Carga Editorial y Géneros en un solo JOIN FETCH automático.
     @EntityGraph(attributePaths = {"editorial", "generos"})
