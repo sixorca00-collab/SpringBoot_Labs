@@ -47,10 +47,10 @@
     <tr>
         <th>ID</th>
         <th>Título</th>
+        <th>ISBN</th>
         <th>Fecha</th>
         <th>Precio</th>
         <th>Editorial</th>
-        <th>País</th>
         <th>Acciones</th>
     </tr>
     </thead>
@@ -59,14 +59,14 @@
     <tr th:each="libro : ${libros}">
         <td th:text="${libro.id}">1</td>
         <td th:text="${libro.titulo}">Título de Prueba</td>
+        <td th:text="${libro.isbn}">ISBN</td>
         <td th:text="${libro.fechaPublicacion}">2026-01-01</td>
         <td th:text="${libro.precio}">0.00</td>
-        <td th:text="${libro.editorialNombre}">Editorial</td>
-        <td th:text="${libro.pais}">País</td>
+        <td th:text="${libro.nombreEditorial}">Editorial</td>
         <td>
             <form th:action="@{/ui/libros/{id}/descatalogar(id=${libro.id})}" method="post" style="margin: 0;">
                 <input type="hidden" name="page" th:value="${currentPage}" />
-                <input type="hidden" name="size" value="50" />
+                <input type="hidden" name="size" th:value="${pageSize}" />
                 <button type="submit"
                         style="padding: 6px 10px; background-color: #c62828; color: white; border: 0; border-radius: 4px; cursor: pointer;">
                     Descatalogar
@@ -78,12 +78,12 @@
 </table>
 
 <div class="pagination" th:unless="${#lists.isEmpty(libros)}">
-    <a th:href="@{/ui/libros(page=${currentPage - 1},size=50)}"
+    <a th:href="@{/ui/libros(page=${currentPage - 1},size=${pageSize})}"
        th:class="${hasPrevious} ? 'page-btn enabled' : 'page-btn disabled'">Anterior</a>
 
     <span class="page-info" th:text="'Página ' + (${currentPage} + 1)">Página 1</span>
 
-    <a th:href="@{/ui/libros(page=${currentPage + 1},size=50)}"
+    <a th:href="@{/ui/libros(page=${currentPage + 1},size=${pageSize})}"
        th:class="${hasNext} ? 'page-btn enabled' : 'page-btn disabled'">Siguiente</a>
 </div>
 <div th:replace="~{libros/layout/componentes :: footer}"></div>
