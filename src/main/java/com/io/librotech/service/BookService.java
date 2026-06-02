@@ -2,7 +2,6 @@ package com.io.librotech.service;
 
 import com.io.librotech.dto.LibroCreateDTO;
 import com.io.librotech.dto.LibroResponseDTO;
-import com.io.librotech.dto.LibroResumeDTO;
 import com.io.librotech.mapper.LibroMapper;
 import com.io.librotech.models.Editorial;
 import com.io.librotech.models.Genero;
@@ -12,11 +11,12 @@ import com.io.librotech.repository.EditorialRepository;
 import com.io.librotech.repository.GeneroRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -37,46 +37,25 @@ public class BookService {
         return libroMapper.toResponseDTO(libro);
     }
 
-    public List<LibroResumeDTO> getAll() {
-        return libroRepository.findAllLibroResumenes();
-    }
-
-    public LibroResumeDTO obtenerResumenPorId(Long id) {
-        Libro libro = libroRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Libro no encontrado"));
-        return new LibroResumeDTO(
-                libro.getId(),
-                libro.getTitulo(),
-                libro.getFechaPublicacion(),
-                libro.getPrecio(),
-                libro.getEditorial() != null ? libro.getEditorial().getNombre() : null,
-                libro.getEditorial() != null ? libro.getEditorial().getPais() : null
-        );
+    public List<LibroResponseDTO> getAll() {
+        return libroRepository.findAll().stream()
+                .map(libroMapper::toResponseDTO)
+                .toList();
     }
 
     @Transactional
-    public Libro saveBook(Libro libro) {
-        Libro libroAguardar = prepararLibroParaPersistencia(libro);
-        return libroRepository.save(libroAguardar);
+    public LibroResponseDTO crearLibro(LibroCreateDTO dto) {
+        Libro libro = new Libro();
+        aplicarDatosDelDto(libro, dto, true);
+        return libroMapper.toResponseDTO(libroRepository.save(libro));
     }
 
     @Transactional
-    public Libro actualizar(Long id, Libro libro) {
+    public LibroResponseDTO actualizarLibro(Long id, LibroCreateDTO dto) {
         Libro existente = libroRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Libro no encontrado"));
-
-        existente.setTitulo(libro.getTitulo());
-        existente.setAutor(libro.getAutor());
-        existente.setIsbn(libro.getIsbn());
-        existente.setFechaPublicacion(libro.getFechaPublicacion());
-        existente.setPrecio(libro.getPrecio());
-        existente.setDisponible(libro.getDisponible() != null ? libro.getDisponible() : existente.getDisponible());
-        existente.setEditorial(resolverEditorial(libro.getEditorial()));
-        if (libro.getGeneros() != null) {
-            existente.setGeneros(resolverGeneros(libro.getGeneros()));
-        }
-
-        return libroRepository.save(existente);
+        aplicarDatosDelDto(existente, dto, false);
+        return libroMapper.toResponseDTO(libroRepository.save(existente));
     }
 
     @Transactional
@@ -87,9 +66,14 @@ public class BookService {
         libroRepository.deleteById(id);
     }
 
-    public Slice<LibroResumeDTO> getCatalog(int page, int size) {
+    public Slice<LibroResponseDTO> getCatalog(int page, int size) {
         int validateSize = Math.min(size, 50);
-        return libroRepository.findAllLibroResumenes(PageRequest.of(page, validateSize));
+        Page<Libro> libros = libroRepository.findAll(PageRequest.of(page, validateSize));
+        return new SliceImpl<>(
+                libros.getContent().stream().map(libroMapper::toResponseDTO).toList(),
+                libros.getPageable(),
+                libros.hasNext()
+        );
     }
 
     @Transactional
@@ -98,59 +82,6 @@ public class BookService {
                 .orElseThrow(() -> new RuntimeException("Libro no encontrado"));
         libro.softDelete();
         libroRepository.save(libro);
-    }
-
-    @Transactional
-    public LibroResponseDTO crearLibro(LibroCreateDTO dto) {
-        Libro libro = libroMapper.toEntity(dto);
-        libro.setPrecio(dto.precio());
-
-        if (dto.editorialId() == null) {
-            throw new RuntimeException("Editorial no existe");
-        }
-        Editorial editorial = editorialRepository.findById(dto.editorialId())
-                .orElseThrow(() -> new RuntimeException("Editorial no existe"));
-        libro.setEditorial(editorial);
-
-        List<Genero> generos = cargarGenerosPorIds(dto.generoIds());
-        libro.setGeneros(generos);
-
-        Libro libroGuardado = libroRepository.save(libro);
-        return libroMapper.toResponseDTO(libroGuardado);
-    }
-
-    private Libro prepararLibroParaPersistencia(Libro libro) {
-        if (libro == null) {
-            throw new RuntimeException("Libro inválido");
-        }
-
-        libro.setEditorial(resolverEditorial(libro.getEditorial()));
-        if (libro.getGeneros() != null) {
-            libro.setGeneros(resolverGeneros(libro.getGeneros()));
-        }
-        return libro;
-    }
-
-    private Editorial resolverEditorial(Editorial editorial) {
-        if (editorial == null) {
-            return null;
-        }
-        if (editorial.getId() == null) {
-            return editorialRepository.save(editorial);
-        }
-        return editorialRepository.findById(editorial.getId())
-                .orElseThrow(() -> new RuntimeException("Editorial no existe"));
-    }
-
-    private List<Genero> resolverGeneros(Collection<Genero> generos) {
-        if (generos == null) {
-            return null;
-        }
-        List<Long> ids = generos.stream()
-                .map(Genero::getId)
-                .filter(Objects::nonNull)
-                .toList();
-        return cargarGenerosPorIds(ids);
     }
 
     private List<Genero> cargarGenerosPorIds(Collection<Long> ids) {
@@ -168,5 +99,31 @@ public class BookService {
             throw new RuntimeException("Uno o más géneros no existen");
         }
         return new ArrayList<>(generos);
+    }
+
+    private void aplicarDatosDelDto(Libro libro, LibroCreateDTO dto, boolean crear) {
+        if (dto == null) {
+            throw new RuntimeException("Libro inválido");
+        }
+
+        libro.setTitulo(dto.titulo());
+        libro.setAutor(dto.autor());
+        libro.setIsbn(dto.isbn());
+        libro.setFechaPublicacion(dto.fechaPublicacion());
+        libro.setPrecio(dto.precio());
+        libro.setDisponible(crear ? Boolean.TRUE : libro.getDisponible());
+        libro.setEditorial(resolverEditorialPorId(dto.editorialId()));
+
+        if (crear || dto.generoIds() != null) {
+            libro.setGeneros(cargarGenerosPorIds(dto.generoIds()));
+        }
+    }
+
+    private Editorial resolverEditorialPorId(Long editorialId) {
+        if (editorialId == null) {
+            throw new RuntimeException("Editorial no existe");
+        }
+        return editorialRepository.findById(editorialId)
+                .orElseThrow(() -> new RuntimeException("Editorial no existe"));
     }
 }

@@ -1,11 +1,9 @@
 package com.io.librotech.controller;
 
-import com.io.librotech.dto.LibroResumeDTO;
-import com.io.librotech.models.Libro;
+import com.io.librotech.dto.LibroCreateDTO;
+import com.io.librotech.dto.LibroResponseDTO;
 import com.io.librotech.service.BookService;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +20,7 @@ public class LibroController {
 
     // GET ALL
     @GetMapping
-    public ResponseEntity<List<LibroResumeDTO>> getAllBooks() {
+    public ResponseEntity<List<LibroResponseDTO>> getAllBooks() {
 
         return ResponseEntity.ok(
                 serviceBook.getAll()
@@ -32,15 +30,9 @@ public class LibroController {
     // GET BY ID
     @GetMapping("/{id}")
     public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
-
         try {
-
-            LibroResumeDTO libro = serviceBook.obtenerResumenPorId(id);
-
-            return ResponseEntity.ok(libro);
-
+            return ResponseEntity.ok(serviceBook.obtenerPorId(id));
         } catch (RuntimeException e) {
-
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Libro con ID " + id + " no encontrado.");
         }
@@ -48,29 +40,20 @@ public class LibroController {
 
     // POST
     @PostMapping
-    public ResponseEntity<Libro> crear(@RequestBody Libro libro) {
-
-        Libro nuevoLibro = serviceBook.saveBook(libro);
-
+    public ResponseEntity<LibroResponseDTO> crear(@RequestBody LibroCreateDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(nuevoLibro);
+                .body(serviceBook.crearLibro(dto));
     }
 
     // PUT
     @PutMapping("/{id}")
     public ResponseEntity<?> actualizar(
             @PathVariable Long id,
-            @RequestBody Libro libro
+            @RequestBody LibroCreateDTO dto
     ) {
-
         try {
-
-            Libro actualizado = serviceBook.actualizar(id, libro);
-
-            return ResponseEntity.ok(actualizado);
-
+            return ResponseEntity.ok(serviceBook.actualizarLibro(id, dto));
         } catch (RuntimeException e) {
-
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("No se pudo actualizar. Libro no encontrado.");
         }
@@ -95,7 +78,7 @@ public class LibroController {
 
     // CATALOGO OPTIMIZADO
     @GetMapping("/catalogo")
-    public ResponseEntity<Slice<LibroResumeDTO>> getCatalog(
+    public ResponseEntity<Slice<LibroResponseDTO>> getCatalog(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
@@ -110,15 +93,10 @@ public class LibroController {
     public ResponseEntity<?> descatalogarLibro(
             @PathVariable Long id
     ) {
-
         try {
-
             serviceBook.descatalogarLibro(id);
-
             return ResponseEntity.ok("Libro descatalogado");
-
         } catch (RuntimeException e) {
-
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Libro no encontrado.");
         }
