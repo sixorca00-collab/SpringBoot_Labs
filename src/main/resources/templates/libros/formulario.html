@@ -9,6 +9,8 @@
         .form-group { margin-bottom: 14px; }
         label { display: block; margin-bottom: 6px; font-weight: bold; color: #333; }
         input { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        input.is-invalid { border-color: #dc3545; background-color: #fff5f5; }
+        .field-error { color: #dc3545; font-size: 0.9em; margin-top: 6px; }
         .actions { margin-top: 18px; display: flex; gap: 10px; }
         .btn { padding: 10px 15px; color: white; text-decoration: none; border: 0; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .btn-primary { background-color: #4CAF50; }
@@ -23,39 +25,45 @@
 <h1 th:text="${tituloPantalla}">Nuevo Libro</h1>
 
 <div class="form-wrapper">
-    <div th:if="${ErrorAnio}" class="error-box">
-        <strong th:text="${ErrorAnio}">Mensaje de error genérico</strong>
-    </div>
-
     <form th:action="@{/ui/libros/guardar}" th:object="${libro}" method="post">
+        <div th:if="${#fields.hasErrors('*')}" class="error-box">
+            <strong>Corrige los campos marcados antes de continuar.</strong>
+        </div>
+
         <div class="form-group">
             <label for="titulo">Título del Libro</label>
-            <input id="titulo" type="text" th:field="*{titulo}" required />
+            <input id="titulo" type="text" th:field="*{titulo}" th:errorclass="is-invalid" required />
+            <div class="field-error" th:if="${#fields.hasErrors('titulo')}" th:errors="*{titulo}">Error de título</div>
         </div>
 
         <div class="form-group">
             <label for="autor">Autor</label>
-            <input id="autor" type="text" th:field="*{autor}" required />
+            <input id="autor" type="text" th:field="*{autor}" th:errorclass="is-invalid" required />
+            <div class="field-error" th:if="${#fields.hasErrors('autor')}" th:errors="*{autor}">Error de autor</div>
         </div>
 
         <div class="form-group">
             <label for="isbn">ISBN</label>
-            <input id="isbn" type="text" th:field="*{isbn}" required />
+            <input id="isbn" type="text" th:field="*{isbn}" th:errorclass="is-invalid" required />
+            <div class="field-error" th:if="${#fields.hasErrors('isbn')}" th:errors="*{isbn}">Error de ISBN</div>
         </div>
 
         <div class="form-group">
             <label for="fechaPublicacion">Fecha de Publicación</label>
-            <input id="fechaPublicacion" type="date" th:field="*{fechaPublicacion}" required />
+            <input id="fechaPublicacion" type="date" th:field="*{fechaPublicacion}" th:errorclass="is-invalid" required />
+            <div class="field-error" th:if="${#fields.hasErrors('fechaPublicacion')}" th:errors="*{fechaPublicacion}">Error de fecha</div>
         </div>
 
         <div class="form-group">
             <label for="precio">Precio</label>
-            <input id="precio" type="number" step="0.01" th:field="*{precio}" required />
+            <input id="precio" type="number" step="0.01" th:field="*{precio}" th:errorclass="is-invalid" required />
+            <div class="field-error" th:if="${#fields.hasErrors('precio')}" th:errors="*{precio}">Error de precio</div>
         </div>
 
         <div class="form-group">
             <label for="editorialId">ID de Editorial (1 a 10)</label>
-            <input id="editorialId" type="number" th:field="*{editorialId}" min="1" max="10" required />
+            <input id="editorialId" type="number" th:field="*{editorialId}" th:errorclass="is-invalid" min="1" max="10" required />
+            <div class="field-error" th:if="${#fields.hasErrors('editorialId')}" th:errors="*{editorialId}">Error de editorial</div>
         </div>
 
         <div class="actions">

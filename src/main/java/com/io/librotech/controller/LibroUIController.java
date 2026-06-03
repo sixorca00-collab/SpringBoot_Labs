@@ -4,14 +4,15 @@ import com.io.librotech.dto.LibroCreateDTO;
 import com.io.librotech.dto.LibroFormDTO;
 import com.io.librotech.dto.LibroResponseDTO;
 import com.io.librotech.service.BookService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
-import java.time.LocalDate;
 
 @Controller
 @RequestMapping("/ui/libros")
@@ -46,13 +47,13 @@ public class LibroUIController {
     }
 
     @PostMapping("/guardar")
-    public String guardarLibro(@ModelAttribute("libro") LibroFormDTO libro, Model model) {
-        int anioActual = LocalDate.now().getYear();
-
-        if (libro.getFechaPublicacion() != null && libro.getFechaPublicacion().getYear() > anioActual) {
-            model.addAttribute("ErrorAnio", "El año de publicación no puede ser mayor al año presente: " + anioActual);
-            model.addAttribute("tituloPantalla", "Registrar nuevo libro (Corrección)");
-
+    public String guardarLibro(
+            @Valid @ModelAttribute("libro") LibroFormDTO libro,
+            BindingResult bindingResult,
+            Model model
+    ) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("tituloPantalla", "Registrar Nuevo Libro");
             return "libros/formulario";
         }
 
