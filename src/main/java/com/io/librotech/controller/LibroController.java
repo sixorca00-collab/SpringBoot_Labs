@@ -3,6 +3,7 @@ package com.io.librotech.controller;
 import com.io.librotech.dto.LibroCreateDTO;
 import com.io.librotech.dto.LibroResponseDTO;
 import com.io.librotech.service.BookService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
@@ -40,7 +41,7 @@ public class LibroController {
 
     // POST
     @PostMapping
-    public ResponseEntity<LibroResponseDTO> crear(@RequestBody LibroCreateDTO dto) {
+    public ResponseEntity<LibroResponseDTO> crear(@Valid @RequestBody LibroCreateDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(serviceBook.crearLibro(dto));
     }
@@ -49,7 +50,7 @@ public class LibroController {
     @PutMapping("/{id}")
     public ResponseEntity<?> actualizar(
             @PathVariable Long id,
-            @RequestBody LibroCreateDTO dto
+            @Valid @RequestBody LibroCreateDTO dto
     ) {
         try {
             return ResponseEntity.ok(serviceBook.actualizarLibro(id, dto));
