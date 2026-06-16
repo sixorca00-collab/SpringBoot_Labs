@@ -1,62 +1,105 @@
 package com.io.librotech.controller;
 
-import com.io.librotech.models.Libro;
+import com.io.librotech.dto.LibroCreateDTO;
+import com.io.librotech.dto.LibroResponseDTO;
 import com.io.librotech.service.BookService;
-import lombok.AllArgsConstructor;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
-
 
 @RestController
 @RequestMapping("/api/libros")
-@AllArgsConstructor
-
+@RequiredArgsConstructor
 public class LibroController {
 
-    private BookService serviceBook;
-    //GET
+    private final BookService serviceBook;
+
+    // GET ALL
     @GetMapping
-    public List<Libro> getAllBooks(){
-        return serviceBook.getAll();
+    public ResponseEntity<List<LibroResponseDTO>> getAllBooks() {
+
+        return ResponseEntity.ok(
+                serviceBook.getAll()
+        );
     }
 
-
+    // GET BY ID
     @GetMapping("/{id}")
     public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
-        Optional<Libro> libro = serviceBook.obtenerPorId(id);
-        if (libro.isPresent()) {
-            return ResponseEntity.ok(libro.get()); // 200 OK
+        try {
+            return ResponseEntity.ok(serviceBook.obtenerPorId(id));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Libro con ID " + id + " no encontrado.");
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body("Libro con ID " + id + " no encontrado."); // 404
     }
 
+    // POST
     @PostMapping
-    public ResponseEntity<Libro> crear(@RequestBody Libro libro) {
-        Libro nuevoLibro = serviceBook.saveBook(libro);
-        return new ResponseEntity<>(nuevoLibro, HttpStatus.CREATED); // 201
+    public ResponseEntity<LibroResponseDTO> crear(@Valid @RequestBody LibroCreateDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(serviceBook.crearLibro(dto));
     }
 
+    // PUT
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable Long id, @RequestBody Libro libro) {
-        Optional<Libro> actualizado = serviceBook.actualizar(id, libro);
-        if (actualizado.isPresent()) {
-            return ResponseEntity.ok(actualizado.get()); // 200
+    public ResponseEntity<?> actualizar(
+            @PathVariable Long id,
+            @Valid @RequestBody LibroCreateDTO dto
+    ) {
+        try {
+            return ResponseEntity.ok(serviceBook.actualizarLibro(id, dto));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("No se pudo actualizar. Libro no encontrado.");
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body("No se pudo actualizar. Libro no encontrado."); // 404
     }
 
+    // DELETE
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        if (serviceBook.eliminar(id)) {
-            return ResponseEntity.noContent().build() ;  // 204 No Content
+    public ResponseEntity<?> eliminar(@PathVariable Long id) {
+
+        try {
+
+            serviceBook.eliminar(id);
+
+            return ResponseEntity.noContent().build();
+
+        } catch (RuntimeException e) {
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Libro no encontrado.");
         }
-        return ResponseEntity.notFound().build(); // 404
     }
 
+    // CATALOGO OPTIMIZADO
+    @GetMapping("/catalogo")
+    public ResponseEntity<Slice<LibroResponseDTO>> getCatalog(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+
+        return ResponseEntity.ok(
+                serviceBook.getCatalog(page, size)
+        );
+    }
+
+    // SOFT DELETE
+    @PatchMapping("/{id}/descatalogar")
+    public ResponseEntity<?> descatalogarLibro(
+            @PathVariable Long id
+    ) {
+        try {
+            serviceBook.descatalogarLibro(id);
+            return ResponseEntity.ok("Libro descatalogado");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Libro no encontrado.");
+        }
+    }
 }

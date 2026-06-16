@@ -2,63 +2,74 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${tituloPantalla}">Formulario</title>
+    <title th:text="${tituloPantalla}">Nuevo Libro</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9; }
-        .form-container { max-width: 400px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
-        input { padding: 8px; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; }
-        button:hover { background-color: #45a049; }
-        .btn-cancel { background-color: #f44336; text-decoration: none; display: inline-block; padding: 10px 15px; color: white; border-radius: 4px; text-align: center; margin-top: 10px; width: 100%; box-sizing: border-box; }
-        .btn-cancel:hover { background-color: #da190b; }
+        .form-wrapper { max-width: 760px; background: white; border: 1px solid #ddd; border-radius: 6px; padding: 24px; margin-top: 20px; }
+        .form-group { margin-bottom: 14px; }
+        label { display: block; margin-bottom: 6px; font-weight: bold; color: #333; }
+        input { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        input.is-invalid { border-color: #dc3545; background-color: #fff5f5; }
+        .field-error { color: #dc3545; font-size: 0.9em; margin-top: 6px; }
+        .actions { margin-top: 18px; display: flex; gap: 10px; }
+        .btn { padding: 10px 15px; color: white; text-decoration: none; border: 0; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-primary { background-color: #4CAF50; }
+        .btn-secondary { background-color: #777; }
+        .error-box { background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
-<!-- th:replace="ruta/archivo :: nombreFragmento" -->
 <div th:replace="~{libros/layout/componentes :: navbar}"></div>
 
-<div style="margin: 20px;">
-    <!-- ... AQUÍ VA EL CONTENIDO PRINCIPAL (El <h1>, la tabla, el formulario, etc.) ... -->
-</div>
+<h1 th:text="${tituloPantalla}">Nuevo Libro</h1>
 
-
-
-<div class="form-container">
-    <h1 th:text="${tituloPantalla}">Nuevo Libro</h1>
-
-    <!-- Bloque de error visual -->
-    <div th:if="${errorAnio}" style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
-        <strong th:text="${errorAnio}">Mensaje de error genérico</strong>
-    </div>
-
+<div class="form-wrapper">
     <form th:action="@{/ui/libros/guardar}" th:object="${libro}" method="post">
-
-        <div class="form-group">
-            <label for="titulo">Título del Libro:</label>
-            <input type="text" th:field="*{titulo}" required />
+        <div th:if="${#fields.hasErrors('*')}" class="error-box">
+            <strong>Corrige los campos marcados antes de continuar.</strong>
         </div>
 
         <div class="form-group">
-            <label for="autor">Autor:</label>
-            <input type="text" th:field="*{autor}" required />
+            <label for="titulo">Título del Libro</label>
+            <input id="titulo" type="text" th:field="*{titulo}" th:errorclass="is-invalid" required />
+            <div class="field-error" th:if="${#fields.hasErrors('titulo')}" th:errors="*{titulo}">Error de título</div>
         </div>
 
         <div class="form-group">
-            <label for="isbn">ISBN:</label>
-            <input type="text" th:field="*{isbn}" required />
+            <label for="autor">Autor</label>
+            <input id="autor" type="text" th:field="*{autor}" th:errorclass="is-invalid" required />
+            <div class="field-error" th:if="${#fields.hasErrors('autor')}" th:errors="*{autor}">Error de autor</div>
         </div>
 
         <div class="form-group">
-            <label for="anioPublicacion">Año de Publicación:</label>
-            <input type="number" th:field="*{anioPublicacion}" required />
+            <label for="isbn">ISBN</label>
+            <input id="isbn" type="text" th:field="*{isbn}" th:errorclass="is-invalid" required />
+            <div class="field-error" th:if="${#fields.hasErrors('isbn')}" th:errors="*{isbn}">Error de ISBN</div>
         </div>
 
-        <button type="submit">Guardar Libro</button>
-        <a th:href="@{/ui/libros}" class="btn-cancel">Cancelar</a>
+        <div class="form-group">
+            <label for="fechaPublicacion">Fecha de Publicación</label>
+            <input id="fechaPublicacion" type="date" th:field="*{fechaPublicacion}" th:errorclass="is-invalid" required />
+            <div class="field-error" th:if="${#fields.hasErrors('fechaPublicacion')}" th:errors="*{fechaPublicacion}">Error de fecha</div>
+        </div>
 
+        <div class="form-group">
+            <label for="precio">Precio</label>
+            <input id="precio" type="number" step="0.01" th:field="*{precio}" th:errorclass="is-invalid" required />
+            <div class="field-error" th:if="${#fields.hasErrors('precio')}" th:errors="*{precio}">Error de precio</div>
+        </div>
+
+        <div class="form-group">
+            <label for="editorialId">ID de Editorial (1 a 10)</label>
+            <input id="editorialId" type="number" th:field="*{editorialId}" th:errorclass="is-invalid" min="1" max="10" required />
+            <div class="field-error" th:if="${#fields.hasErrors('editorialId')}" th:errors="*{editorialId}">Error de editorial</div>
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn btn-primary">Guardar Libro</button>
+            <a th:href="@{/ui/libros}" class="btn btn-secondary">Cancelar</a>
+        </div>
     </form>
 </div>
 

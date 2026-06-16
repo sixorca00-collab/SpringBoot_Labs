@@ -1,70 +1,79 @@
 package com.io.librotech.controller;
 
-import com.io.librotech.models.Libro;
+import com.io.librotech.dto.LibroCreateDTO;
+import com.io.librotech.dto.LibroFormDTO;
+import com.io.librotech.dto.LibroResponseDTO;
 import com.io.librotech.service.BookService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.util.List;
+import java.util.Collections;
 
-@Controller // Ojo: Aquí NO usamos @RestController, solo @Controller
+@Controller
 @RequestMapping("/ui/libros")
+@RequiredArgsConstructor
 public class LibroUIController {
-
-    @Autowired
-    private BookService libroService; // Tu servicio de siempre
+    private final BookService libroService;
 
     @GetMapping
-    public String listarLibrosUI(Model model) {
-        // 1. Buscamos los libros que ya existen en la base de datos
-        List<Libro> libros = libroService.getAll();
+    public String listarLibrosUI(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size,
+            Model model) {
 
-        // 2. Metemos los datos en la "maleta" (Model) para que el HTML los pueda ver
-        model.addAttribute("libros", libros);
+        Slice<LibroResponseDTO> slice = libroService.getCatalog(page, size);
+
+        model.addAttribute("libros", slice.getContent());
+        model.addAttribute("currentPage", slice.getNumber());
+        model.addAttribute("pageSize", size);
+        model.addAttribute("hasNext", slice.hasNext());
+        model.addAttribute("hasPrevious", slice.hasPrevious());
+
         model.addAttribute("tituloPantalla", "Catálogo de Libros - Dashboard");
 
-        // 3. Le decimos a Spring que busque el archivo HTML llamado "lista" dentro de la carpeta "libros"
         return "libros/lista";
     }
 
     @GetMapping("/nuevo")
     public String mostrarFormularioCreacion(Model model) {
-        // Enviamos una instancia vacía que el formulario de Thymeleaf va a llenar
-        model.addAttribute("libro", new Libro());
+        model.addAttribute("libro", new LibroFormDTO());
         model.addAttribute("tituloPantalla", "Registrar Nuevo Libro");
-
         return "libros/formulario";
     }
 
     @PostMapping("/guardar")
-    public String guardarLibro(@ModelAttribute("libro") Libro libro, Model model) {
-    //Guardamos el año actual como variable para poder hacerle una validación
-
-        int anioActual = LocalDate.now().getYear();
-
-        if (libro.getAnioPublicacion() > anioActual){
-            //Inyectamos el mensaje de error
-
-            model.addAttribute("ErrorAnio", "El anio de publicacion no puede ser mayor al año presente" + anioActual +
-                    model.addAttribute("tituloPantalla", "Registrar nuevo libro(Corrección)"));
-            //Lo redireccionamos a que lo cree de nuevo
+    public String guardarLibro(
+            @Valid @ModelAttribute("libro") LibroFormDTO libro,
+            BindingResult bindingResult,
+            Model model
+    ) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("tituloPantalla", "Registrar Nuevo Libro");
             return "libros/formulario";
-
         }
-        //Si esta bien seguimos el flujo con normalidada
 
-        //Guardamos el libro usando el méthodo real de tu servicio
-
-        libroService.saveBook(libro);
-
-        // 2. Patrón PRG: Post, Reset, Get.
-        // La palabra "redirect:" le dice al navegador que haga una nueva petición limpia
+        libroService.crearLibro(new LibroCreateDTO(
+                libro.getTitulo(),
+                libro.getAutor(),
+                libro.getIsbn(),
+                libro.getFechaPublicacion(),
+                libro.getPrecio(),
+                libro.getEditorialId(),
+                Collections.emptySet()
+        ));
         return "redirect:/ui/libros";
+    }
+
+    @PostMapping("/{id}/descatalogar")
+    public String descatalogarLibro(@PathVariable Long id,
+                                    @RequestParam(defaultValue = "0") int page,
+                                    @RequestParam(defaultValue = "50") int size) {
+        libroService.descatalogarLibro(id);
+        return "redirect:/ui/libros?page=" + page + "&size=" + size;
     }
 }

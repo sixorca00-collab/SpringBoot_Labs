@@ -1,53 +1,62 @@
 package com.io.librotech.models;
 
-
 import jakarta.persistence.*;
+import lombok.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "libros")
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+
+@ToString
+@EqualsAndHashCode
+
 public class Libro {
 
-    @Id// lo mapeamos y definimos que e un id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 150)
     private String titulo;
 
-    @Column(nullable = false, length = 120)
     private String autor;
 
-    @Column(nullable = false,unique = true, length = 25)
     private String isbn;
 
-    @Column(nullable = false, length = 6)
-    private int anioPublicacion;
+    private LocalDate fechaPublicacion;
 
-    // Constructor vacío
-    public Libro() {}
+    private BigDecimal precio;
 
-    // Constructor con parámetros
-    public Libro(Long id, String titulo, String autor, String isbn, int anioPublicacion) {
-        this.id = id;
-        this.titulo = titulo;
-        this.autor = autor;
-        this.isbn = isbn;
-        this.anioPublicacion = anioPublicacion;
+    private Boolean disponible;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "editorial_id")
+
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+
+    private Editorial editorial;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "libros_generos",
+            joinColumns = @JoinColumn(name = "libro_id"),
+            inverseJoinColumns = @JoinColumn(name = "genero_id")
+    )
+
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+
+    private List<Genero> generos;
+
+    public void softDelete() {
+        this.disponible = false;
     }
-
-    // Getters y Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getTitulo() { return titulo; }
-    public void setTitulo(String titulo) { this.titulo = titulo; }
-
-    public String getAutor() { return autor; }
-    public void setAutor(String autor) { this.autor = autor; }
-
-    public String getIsbn() { return isbn; }
-    public void setIsbn(String isbn) { this.isbn = isbn; }
-
-    public int getAnioPublicacion() { return anioPublicacion; }
-    public void setAnioPublicacion(int anioPublicacion) { this.anioPublicacion = anioPublicacion; }
 }
